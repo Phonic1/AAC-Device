@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAC Chat Board - House Colours Day</title>
+    <style>
+        body {
+            font-family: 'Sassoon Primary', 'Comic Sans MS', Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .student-name-container {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .student-name-container label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        .student-name-container input[type="text"] {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #d2d2d7;
+            font-size: 1em;
+            width: calc(100% - 120px); /* Adjust as needed */
+            max-width: 300px;
+        }
+
+
+        .chatboard-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        /* Sentence Display */
+        .sentence-display-container {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        #sentence-bar {
+            min-height: 70px; 
+            border: 1px solid #d2d2d7;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start; 
+            gap: 8px;
+            font-size: 1.3em;
+        }
+
+        .sentence-word {
+            display: inline-flex;
+            flex-direction: column; 
+            align-items: center;   
+            text-align: center;    
+            padding: 5px;          
+            background-color: #e9e9eb;
+            border-radius: 6px;
+            border: 1px solid #d2d2d7;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            min-width: 60px; 
+            max-width: 100px; 
+            word-break: break-word;
+        }
+
+        .sentence-word .emoji {
+            font-size: 1.3em;
+            margin-bottom: 4px; 
+            line-height: 1;
+        }
+        .sentence-word .icon-image {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            margin-bottom: 4px; 
+            vertical-align: middle; 
+        }
+
+        .sentence-word .text {
+            font-size: 0.75em; 
+            line-height: 1.2;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            padding: 12px 15px;
+            font-size: 1em;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            flex-grow: 1;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .action-button:hover {
+            transform: translateY(-1px);
+        }
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        #speak-button { background-color: #007aff; }
+        #speak-button:hover { background-color: #005bb5; }
+
+        #delete-last-button { background-color: #ff9500; }
+        #delete-last-button:hover { background-color: #e08500; }
+
+        #clear-button { background-color: #ffcc00; color: #1d1d1f; }
+        #clear-button:hover { background-color: #e6b800; }
+
+        #download-button { background-color: #34c759; }
+        #download-button:hover { background-color: #28a745; }
+
+        /* Categories and Word Buttons Styling */
+        .view-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; 
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        #sub-category-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        #back-to-main-categories-button {
+            padding: 10px 15px;
+            font-size: 1em;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #back-to-main-categories-button:hover {
+            background-color: #5a6268;
+        }
+
+        #sub-category-title-text {
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .main-category-buttons-grid,
+        .word-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+            gap: 15px;
+        }
+
+        .main-category-button,
+        .word-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            padding: 10px 5px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            min-height: 120px; /* Keep overall button size */
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden; 
+        }
+        .main-category-button:hover,
+        .word-button:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .main-category-button:active,
+        .word-button:active {
+            transform: translateY(0px) scale(0.97);
+        }
+
+        .main-category-button .text,
+        .word-button .text {
+            font-size: 0.9em; 
+            word-break: break-word;
+            color: #1d1d1f;
+            margin-top: auto; 
+        }
+
+        .main-category-button .main-category-image-content,
+        .word-button .word-image-content {
+            width: 75%; /* Slightly increased width percentage */
+            height: auto;
+            max-height: 85px; /* MODIFIED: Increased from 70px for larger images */
+            object-fit: contain;
+            margin-bottom: 6px; /* MODIFIED: Adjusted from 8px to balance larger image */
+            border-radius: 6px;
+        }
+        
+        .word-button .word-emoji-content { /* Emoji styling for word buttons, if used */
+            font-size: 3.5em; 
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .main-category-button .main-category-emoji-content { /* Emoji styling for main category buttons */
+            font-size: 2.5em; 
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+
+        /* Worksheet Area */
+        #worksheet-area {
+            display: none;
+            margin-top: 20px;
+        }
+        #worksheet-student-name {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        #worksheet-title {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        .worksheet-sentence {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start; 
+            gap: 8px; 
+            padding: 8px;
+            border: 1px solid #eee;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .worksheet-sentence .word-item {
+            display: inline-flex;   
+            flex-direction: column; 
+            align-items: center;    
+            text-align: center;     
+            padding: 2px 4px;       
+            min-width: 50px;        
+            word-break: break-word;
+        }
+        .worksheet-sentence .word-item .emoji {
+             font-size: 1.5em;
+             margin-bottom: 2px; 
+             line-height: 1;
+        }
+        .worksheet-sentence .word-item .icon-image {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            margin-bottom: 3px; 
+            vertical-align: middle;
+        }
+         .worksheet-sentence .word-item .text {
+             font-size: 0.9em; 
+             line-height: 1.1;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                padding: 0;
+                background-color: #fff;
+            }
+            .student-name-container, 
+            .sentence-display-container, .action-buttons,
+            #main-categories-view, #sub-category-words-view 
+             {
+                display: none !important;
+            }
+            #worksheet-area {
+                display: block !important;
+            }
+             #worksheet-student-name, #worksheet-title, .worksheet-sentence {
+                color: black;
+            }
+            .worksheet-sentence .word-item .icon-image {
+                filter: grayscale(0%); 
+            }
+            .worksheet-sentence .word-item .text {
+                color: black !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="student-name-container">
+        <label for="student-name-input">Student Name:</label>
+        <input type="text" id="student-name-input" placeholder="Enter student's name">
+    </div>
+
+    <div class="chatboard-container">
+        <div class="sentence-display-container">
+            <div id="sentence-bar">
+                <!-- Words will appear here -->
+            </div>
+            <div class="action-buttons">
+                <button id="speak-button" class="action-button">Speak 🗣️</button>
+                <button id="delete-last-button" class="action-button">Delete Last ⏪</button>
+                <button id="clear-button" class="action-button">Clear & Save 💾</button>
+                <button id="download-button" class="action-button">Print Worksheet 📄</button>
+            </div>
+        </div>
+
+        <div id="main-categories-view" class="view-container">
+            <div id="main-categories-grid" class="main-category-buttons-grid">
+                <!-- Main category buttons will be rendered here -->
+            </div>
+        </div>
+
+        <div id="sub-category-words-view" class="view-container" style="display: none;">
+            <div id="sub-category-header">
+                <button id="back-to-main-categories-button">← Back</button>
+                <h3 id="sub-category-title-text">Category Name</h3>
+            </div>
+            <div id="sub-category-buttons-grid" class="word-buttons-grid">
+                <!-- Sub-category word buttons will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="worksheet-area">
+        <div id="worksheet-student-name"></div> 
+        <h2 id="worksheet-title">My Sentences</h2>
+        <div id="worksheet-content">
+            <!-- Saved sentences for printing will appear here -->
+        </div>
+    </div>
+
+    <script>
+        const mainCategoriesData = {
+            pronounsDeterminers: {
+                name: "Pronouns & Determiners", color: "#FFECB3", emoji: "🗣️", words: [
+                    { text: "I", image: "i.png" }, { text: "you", image: "you.png" }, { text: "he", image: "he.png" },
+                    { text: "she", image: "she.png" }, { text: "we", image: "we.png" }, { text: "they", image: "they.png" },
+                    { text: "me", image: "me.png" }, { text: "him", image: "him.png" }, { text: "her", image: "her.png" },
+                    { text: "us", image: "us.png" }, { text: "them", image: "them.png" }, { text: "my", image: "my.png" },
+                    { text: "your", image: "your.png" }, { text: "his", image: "his.png" }, 
+                    { text: "her", image: "her.png" , speechText:"her item"}, 
+                    { text: "our", image: "our.png" }, { text: "their", image: "their.png" }, { text: "this", image: "this.png" },
+                    { text: "that", image: "that.png" }, { text: "these", image: "these.png" }
+                ]
+            },
+            peopleHelpers: {
+                name: "People & Helpers", color: "#C8E6C9", emoji: "🧑‍🤝‍🧑", words: [
+                    { text: "teacher", image: "teacher.png" }, { text: "staff", image: "staff.png" }, { text: "friend", image: "friend.png" },
+                    { text: "student", image: "student.png" }, { text: "parent", image: "parent.png" }, { text: "helper", image: "helper.png" },
+                    { text: "volunteer", image: "volunteer.png" }, { text: "caretaker", image: "caretaker.png" }, { text: "guide", image: "guide.png" },
+                    { text: "classmate", image: "classmate.png" }, { text: "performer", image: "performer.png" }, { text: "crowd", image: "crowd.png" },
+                    { text: "audience", image: "audience.png" }, { text: "farmer", image: "farmer.png" }, { text: "staff member", image: "staff member.png" },
+                    { text: "clown", image: "clown.png" }, { text: "leader", image: "leader.png" }, { text: "team", image: "team.png" },
+                    { text: "child", image: "child.png" }, { text: "babysitter", image: "babysitter.png" }
+                ]
+            },
+            animalsPettingZoo: {
+                name: "Animals (Petting Zoo)", color: "#A2D9CE", emoji: "🐑", words: [
+                    { text: "lamb", image: "lamb.png" }, { text: "goat", image: "goat.png" }, { text: "rabbit", image: "rabbit.png" },
+                    { text: "chicken", image: "chicken.png" }, { text: "pig", image: "pig.png" }, { text: "cow", image: "cow.png" },
+                    { text: "donkey", image: "donkey.png" , speechText: "donkey"}, { text: "duck", image: "duck.png" }, { text: "horse", image: "horse.png" },
+                    { text: "turkey", image: "turkey.png" }, { text: "guinea pig", image: "guinea pig.png" }, { text: "sheep", image: "sheep.png" },
+                    { text: "cat", image: "cat.png" }, { text: "dog", image: "dog.png" }, { text: "camel", image: "camel.png" },
+                    { text: "bird", image: "bird.png" }, { text: "mouse", image: "mouse.png" }, { text: "fish", image: "fish.png" },
+                    { text: "snake", image: "snake.png" }, { text: "pony", image: "pony.png" }
+                ]
+            },
+            activitiesEvents: {
+                name: "Activities & Events", color: "#B3E5FC", emoji: "🎉", words: [
+                    { text: "beanbag throw", image: "beanbag throw.png", speechText: "beanbag throw" },
+                    { text: "ring toss", image: "ring toss.png", speechText: "ring toss" },
+                    { text: "pie face", image: "pie face.png", speechText: "pie face" },
+                    { text: "petting zoo", image: "petting zoo.png", speechText: "petting zoo visit" }, 
+                    { text: "parade", image: "parade.png" }, { text: "Sensory Zone", image: "sensory zone.png", speechText: "Sensory Zone" },
+                    { text: "feeding animals", image: "feeding animals.png" }, { text: "face painting", image: "face painting.png" },
+                    { text: "craft table", image: "craft table.png" }, { text: "photo booth", image: "photo booth.png" },
+                    { text: "obstacle course", image: "obstacle course.png" }, { text: "snack bar", image: "snack bar.png" },
+                    { text: "puppet show", image: "puppet show.png" }, { text: "balloon pop", image: "balloon pop.png" },
+                    { text: "ticket booth", image: "ticket booth.png" }, { text: "prize stand", image: "prize stand.png" },
+                    { text: "dunk tank", image: "dunk tank.png" }, { text: "game stall", image: "game stall.png" },
+                    { text: "music stage", image: "music stage.png" }, { text: "lineup", image: "lineup.png" },
+                    { text: "House Colours", image: "house colours day podd.png", speechText: "House Colours Day" }
+                ]
+            },
+            verbsActions: {
+                name: "Verbs & Actions", color: "#FFCCBC", emoji: "🤸", words: [
+                    { text: "throw", image: "throw.png" }, { text: "threw", image: "threw.png" }, { text: "catch", image: "catch.png" },
+                    { text: "caught", image: "caught.png" }, { text: "aim", image: "aim.png" }, { text: "aimed", image: "aimed.png" },
+                    { text: "miss", image: "miss.png" }, { text: "missed", image: "missed.png" }, { text: "hit", image: "hit.png" },
+                    { text: "hit", image: "hit.png", speechText: "hit past tense"}, { text: "feed", image: "feed.png" }, { text: "fed", image: "fed.png" },
+                    { text: "pet", image: "pet.png" }, { text: "petted", image: "petted.png" }, { text: "walk", image: "walk.png" },
+                    { text: "walked", image: "walked.png" }, { text: "watch", image: "watch.png" }, { text: "watched", image: "watched.png" },
+                    { text: "clap", image: "clap.png" }, { text: "clapped", image: "clapped.png" }, { text: "cheer", image: "cheer.png" },
+                    { text: "cheered", image: "cheered.png" }, { text: "touch", image: "touch.png" }, { text: "touched", image: "touched.png" },
+                    { text: "smell", image: "smell.png" }, { text: "smelled", image: "smelled.png" }, { text: "hear", image: "hear.png" },
+                    { text: "heard", image: "heard.png" }, { text: "see", image: "see.png" }, { text: "saw", image: "saw.png" },
+                    { text: "taste", image: "taste.png" }, { text: "tasted", image: "tasted.png" }, { text: "laugh", image: "laugh.png" },
+                    { text: "laughed", image: "laughed.png" }, { text: "cry", image: "cry.png" }, { text: "cried", image: "cried.png" },
+                    { text: "spin", image: "spin.png" }, { text: "spun", image: "spun.png" }, { text: "jump", image: "jump.png" },
+                    { text: "jumped", image: "jumped.png" }
+                ]
+            },
+            objectsProps: {
+                name: "Objects & Props", color: "#E1BEE7", emoji: "🧸", words: [
+                    { text: "beanbag", image: "beanbag.png" }, { text: "ring", image: "ring.png" }, { text: "plate", image: "plate.png" },
+                    { text: "cream", image: "cream.png" }, { text: "bucket", image: "bucket.png" }, { text: "ticket", image: "ticket.png" },
+                    { text: "hat", image: "hat.png" }, { text: "ribbon", image: "ribbon.png" }, { text: "prize", image: "prize.png" },
+                    { text: "balloon", image: "balloon.png" }, { text: "sign", image: "sign.png" }, { text: "fence", image: "fence.png" },
+                    { text: "mat", image: "mat.png" }, { text: "table", image: "table.png" }, { text: "brush", image: "brush.png" },
+                    { text: "rope", image: "rope.png" }, { text: "ball", image: "ball.png" }, { text: "photo", image: "photo.png" },
+                    { text: "paint", image: "paint.png" }
+                ]
+            },
+            placesLocations: {
+                name: "Places & Locations", color: "#D1C4E9", emoji: "🗺️", words: [
+                    { text: "Sensory Zone", image: "sensory zone.png", speechText: "Sensory Zone" },
+                    { text: "ring toss booth", image: "ring toss booth.png" },
+                    { text: "petting zoo", image: "petting zoo.png", speechText: "the petting zoo area" },
+                    { text: "parade route", image: "parade route.png" }, { text: "school hall", image: "school hall.png" },
+                    { text: "playground", image: "playground.png" }, { text: "fairground", image: "fairground.png" },
+                    { text: "stage", image: "stage.png" }, { text: "tent", image: "tent.png" }, { text: "corridor", image: "corridor.png" },
+                    { text: "field", image: "field.png" }, { text: "hall", image: "hall.png" }, { text: "line", image: "line.png" },
+                    { text: "area", image: "area.png" }, { text: "stall", image: "stall.png" }, { text: "barn", image: "barn.png" },
+                    { text: "arena", image: "arena.png" }, { text: "yard", image: "yard.png" }, { text: "park", image: "park.png" },
+                    { text: "centre", image: "centre.png" , speechText: "center"}
+                ]
+            },
+            adjectivesDescriptors: {
+                name: "Adjectives & Descriptors", color: "#FFCDD2", emoji: "✨", words: [
+                    { text: "big", image: "big.png" }, { text: "small", image: "small.png" }, { text: "soft", image: "soft.png" },
+                    { text: "hard", image: "hard.png" }, { text: "loud", image: "loud.png" }, { text: "quiet", image: "quiet.png" },
+                    { text: "messy", image: "messy.png" }, { text: "clean", image: "clean.png" }, { text: "wet", image: "wet.png" },
+                    { text: "dry", image: "dry.png" }, { text: "sticky", image: "sticky.png" }, { text: "smooth", image: "smooth.png" },
+                    { text: "rough", image: "rough.png" }, { text: "colourful", image: "colourful.png" }, { text: "dark", image: "dark.png" },
+                    { text: "bright", image: "bright.png" }, { text: "fun", image: "fun.png" }, { text: "easy", image: "easy.png" },
+                    { text: "exciting", image: "exciting.png" }, { text: "scary", image: "scary.png" }
+                ]
+            },
+            feelingsEmotions: {
+                name: "Feelings & Emotions", color: "#A9DFBF", emoji: "😊", words: [
+                    { text: "happy", image: "happy.png" }, { text: "excited", image: "excited.png" }, { text: "nervous", image: "nervous.png" },
+                    { text: "scared", image: "scared.png" }, { text: "proud", image: "proud.png" }, { text: "surprised", image: "surprised.png" },
+                    { text: "bored", image: "bored.png" }, { text: "tired", image: "tired.png" }, { text: "silly", image: "silly.png" },
+                    { text: "sad", image: "sad.png" }, { text: "angry", image: "angry.png" }, { text: "calm", image: "calm.png" },
+                    { text: "curious", image: "curious.png" }, { text: "shy", image: "shy.png" }, { text: "brave", image: "brave.png" },
+                    { text: "frustrated", image: "frustrated.png" }, { text: "joyful", image: "joyful.png" }, { text: "amused", image: "amused.png" },
+                    { text: "disappointed", image: "disappointed.png" }, { text: "hungry", image: "hungry.png" }
+                ]
+            },
+            quantifiersNumbers: {
+                name: "Quantifiers & Numbers", color: "#FADBD8", emoji: "🔢", words: [
+                    { text: "one", image: "one.png" }, { text: "two", image: "two.png" }, { text: "three", image: "three.png" },
+                    { text: "many", image: "many.png" }, { text: "some", image: "some.png" }, { text: "all", image: "all.png" },
+                    { text: "each", image: "each.png" }, { text: "every", image: "every.png" }, { text: "no", image: "no.png" },
+                    { text: "none", image: "none.png" }, { text: "both", image: "both.png" }, { text: "first", image: "first.png" },
+                    { text: "second", image: "second.png" }, { text: "last", image: "last.png" }, { text: "more", image: "more.png" },
+                    { text: "less", image: "less.png" }, { text: "few", image: "few.png" }, { text: "several", image: "several.png" },
+                    { text: "enough", image: "enough.png" }
+                ]
+            },
+            prepositionsPositions: {
+                name: "Prepositions & Positions", color: "#D5F5E3", emoji: "📍", words: [
+                    { text: "at", image: "at.png" }, { text: "in", image: "in.png" }, { text: "on", image: "on.png" },
+                    { text: "under", image: "under.png" }, { text: "over", image: "over.png" }, { text: "next to", image: "next to.png" },
+                    { text: "behind", image: "behind.png" }, { text: "around", image: "around.png" }, { text: "between", image: "between.png" },
+                    { text: "through", image: "through.png" }, { text: "with", image: "with.png" }, { text: "for", image: "for.png" },
+                    { text: "from", image: "from.png" }, { text: "to", image: "to.png" }, { text: "up", image: "up.png" },
+                    { text: "down", image: "down.png" }, { text: "near", image: "near.png" }, { text: "beside", image: "beside.png" },
+                    { text: "across", image: "across.png" }, { text: "along", image: "along.png" }
+                ]
+            },
+            conjunctionsConnectives: {
+                name: "Conjunctions & Connectives", color: "#FCF3CF", emoji: "🔗", words: [
+                    { text: "and", image: "and.png" }, { text: "but", image: "but.png" }, { text: "or", image: "or.png" },
+                    { text: "so", image: "so.png" }, { text: "because", image: "because.png" }, { text: "then", image: "then.png" },
+                    { text: "when", image: "when.png" }, { text: "if", image: "if.png" }, { text: "after", image: "after.png" },
+                    { text: "before", image: "before.png" }
+                ]
+            },
+            interjectionsExclamations: {
+                name: "Interjections & Exclamations", color: "#EAF2F8", emoji: "😮", words: [
+                    { text: "yay", image: "yay.png" }, { text: "oops", image: "oops.png" }, { text: "wow", image: "wow.png" },
+                    { text: "eek", image: "eek.png" }, { text: "hooray", image: "hooray.png" }, { text: "oh no", image: "oh no.png" },
+                    { text: "cool", image: "cool.png" }, { text: "great", image: "great.png" }, { text: "yikes", image: "yikes.png" },
+                    { text: "uh-oh", image: "uh-oh.png" }
+                ]
+            }
+        };
+
+
+        const mainCategoriesView = document.getElementById('main-categories-view');
+        const subCategoryWordsView = document.getElementById('sub-category-words-view');
+
+        const mainCategoriesGrid = document.getElementById('main-categories-grid');
+        const subCategoryTitleText = document.getElementById('sub-category-title-text');
+        const subCategoryButtonsGrid = document.getElementById('sub-category-buttons-grid');
+        const backToMainCategoriesButton = document.getElementById('back-to-main-categories-button');
+
+        const sentenceBar = document.getElementById('sentence-bar');
+        const speakButton = document.getElementById('speak-button');
+        const clearButton = document.getElementById('clear-button');
+        const downloadButton = document.getElementById('download-button');
+        const deleteLastButton = document.getElementById('delete-last-button');
+
+        const studentNameInput = document.getElementById('student-name-input'); 
+        const worksheetStudentName = document.getElementById('worksheet-student-name'); 
+        const worksheetContent = document.getElementById('worksheet-content');
+
+
+        let currentSentenceWords = [];
+        let savedSentences = [];
+
+        const synth = window.speechSynthesis;
+        let voices = [];
+
+        function populateVoices() {
+            voices = synth.getVoices();
+        }
+        populateVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoices;
+        }
+
+        function speakText(textToSpeak) {
+            if (synth.speaking) {
+                 synth.cancel(); 
+            }
+            if (textToSpeak && textToSpeak.trim() !== '') {
+                const utterThis = new SpeechSynthesisUtterance(textToSpeak);
+                utterThis.onerror = function (event) {
+                    console.error('SpeechSynthesisUtterance.onerror', event);
+                }
+                synth.speak(utterThis);
+            }
+        }
+
+        function createButton(item, isMainCategory) {
+            const button = document.createElement('button');
+            button.className = isMainCategory ? 'main-category-button' : 'word-button';
+            if (item.color && isMainCategory) {
+                 button.style.backgroundColor = item.color;
+            } else if (!isMainCategory && currentCategoryColor) { 
+                 button.style.backgroundColor = currentCategoryColor;
+            }
+
+
+            let contentHtml = '';
+            if (item.image) { 
+                contentHtml = `<img src="${item.image}" alt="${item.text || item.name}" class="${isMainCategory ? 'main-category-image-content' : 'word-image-content'}">`;
+            } else if (item.emoji) { 
+                contentHtml = `<span class="${isMainCategory ? 'main-category-emoji-content' : 'word-emoji-content'}">${item.emoji}</span>`;
+            }
+
+            button.innerHTML = `
+                ${contentHtml}
+                <span class="text">${item.name || item.text}</span>
+            `;
+            button.setAttribute('aria-label', item.speechText || item.name || item.text);
+            return button;
+        }
+
+        let currentCategoryColor = null; 
+
+        function renderMainCategoriesView() {
+            mainCategoriesGrid.innerHTML = '';
+            subCategoryWordsView.style.display = 'none';
+            mainCategoriesView.style.display = 'flex'; 
+
+            for (const categoryKey in mainCategoriesData) {
+                const category = mainCategoriesData[categoryKey];
+                const button = createButton(category, true);
+                button.addEventListener('click', () => renderSubCategoryWordsView(categoryKey));
+                mainCategoriesGrid.appendChild(button);
+            }
+        }
+
+        function renderSubCategoryWordsView(categoryKey) {
+            const category = mainCategoriesData[categoryKey];
+            if (!category) return;
+
+            currentCategoryColor = category.color; 
+
+            subCategoryButtonsGrid.innerHTML = '';
+            subCategoryTitleText.textContent = category.name;
+            mainCategoriesView.style.display = 'none';
+            subCategoryWordsView.style.display = 'flex'; 
+
+            category.words.forEach(word => {
+                const button = createButton(word, false);
+                button.addEventListener('click', () => handleWordButtonClick(word));
+                subCategoryButtonsGrid.appendChild(button);
+            });
+        }
+
+        backToMainCategoriesButton.addEventListener('click', renderMainCategoriesView);
+
+        function handleWordButtonClick(wordObject) {
+            currentSentenceWords.push(wordObject);
+            updateSentenceBar();
+            speakText(wordObject.speechText || wordObject.text);
+        }
+
+        function updateSentenceBar() {
+            sentenceBar.innerHTML = '';
+            currentSentenceWords.forEach(wordObj => {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'sentence-word';
+
+                let iconHtml = '';
+                if (wordObj.image) { 
+                    iconHtml = `<img src="${wordObj.image}" alt="${wordObj.text}" class="icon-image">`;
+                } else if (wordObj.emoji) { 
+                    iconHtml = `<span class="emoji">${wordObj.emoji}</span>`;
+                } else { 
+                    iconHtml = `<span class="emoji">📝</span>`; 
+                }
+
+                wordDiv.innerHTML = `
+                    ${iconHtml}
+                    <span class="text">${wordObj.text}</span>
+                `;
+                sentenceBar.appendChild(wordDiv);
+            });
+        }
+
+        speakButton.addEventListener('click', () => {
+            if (currentSentenceWords.length > 0) {
+                const sentenceToSpeak = currentSentenceWords.map(w => w.speechText || w.text).join(' ');
+                speakText(sentenceToSpeak);
+            } else {
+                speakText("Nothing to say yet.");
+            }
+        });
+
+        deleteLastButton.addEventListener('click', () => {
+            if (currentSentenceWords.length > 0) {
+                const removedWord = currentSentenceWords.pop();
+                updateSentenceBar();
+                speakText(`Removed ${removedWord.speechText || removedWord.text}`);
+            } else {
+                speakText("Sentence is empty.");
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            if (currentSentenceWords.length > 0) {
+                savedSentences.push([...currentSentenceWords]); 
+                currentSentenceWords = [];
+                updateSentenceBar();
+                speakText("Sentence saved and cleared.");
+            } else {
+                speakText("Nothing to clear.");
+            }
+        });
+
+        downloadButton.addEventListener('click', () => {
+            if (savedSentences.length > 0) {
+                const studentName = studentNameInput.value.trim();
+                if (studentName) {
+                    worksheetStudentName.textContent = studentName;
+                } else {
+                    worksheetStudentName.textContent = ''; 
+                }
+
+                worksheetContent.innerHTML = ''; 
+                savedSentences.forEach((sentenceArray, index) => {
+                    const sentenceDiv = document.createElement('div');
+                    sentenceDiv.className = 'worksheet-sentence';
+
+                    const sentenceNumber = document.createElement('span');
+                    sentenceNumber.textContent = (index + 1) + ". ";
+                    sentenceNumber.style.fontWeight = "bold";
+                    sentenceNumber.style.alignSelf = "center"; 
+                    sentenceDiv.appendChild(sentenceNumber);
+
+                    sentenceArray.forEach(wordObj => {
+                        const wordItemDiv = document.createElement('span');
+                        wordItemDiv.className = 'word-item';
+
+                        let iconHtml = '';
+                        if (wordObj.image) { 
+                            iconHtml = `<img src="${wordObj.image}" alt="${wordObj.text}" class="icon-image">`;
+                        } else if (wordObj.emoji) { 
+                            iconHtml = `<span class="emoji">${wordObj.emoji}</span>`;
+                        } else { 
+                             iconHtml = `<span></span>`; 
+                        }
+
+                        wordItemDiv.innerHTML = `${iconHtml} <span class="text">${wordObj.text}</span>`;
+                        sentenceDiv.appendChild(wordItemDiv);
+                    });
+                    worksheetContent.appendChild(sentenceDiv);
+                });
+                speakText("Worksheet ready to print.");
+                setTimeout(() => window.print(), 100); 
+            } else {
+                speakText("No sentences saved for the worksheet yet.");
+            }
+        });
+
+        // Initial Render
+        renderMainCategoriesView();
+    </script>
+</body>
+</html>
